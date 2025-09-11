@@ -1,7 +1,8 @@
 use crate::crh::poseidon::sbox::PoseidonSbox;
 use crate::{Error, Vec, CRH as CRHTrait};
 use ark_std::marker::PhantomData;
-use ark_std::rand::Rng;
+use ark_std::rand::rngs::StdRng;
+use ark_std::rand::{Rng, SeedableRng};
 
 use crate::crh::TwoToOneCRH;
 use ark_ff::fields::PrimeField;
@@ -30,13 +31,54 @@ pub trait PoseidonRoundParams<F: PrimeField>: Default + Clone {
 }
 
 /// The Poseidon permutation.
-#[derive(Default, Clone)]
+#[derive(Clone)]
 pub struct Poseidon<F, P> {
     pub params: P,
     /// The round key constants
     pub round_keys: Vec<F>,
     /// The MDS matrix to apply in the mix layer.
     pub mds_matrix: Vec<Vec<F>>,
+}
+
+impl<F: PrimeField, P: PoseidonRoundParams<F>> Default for Poseidon<F, P> {
+    fn default() -> Self {
+        // Generate params, round_keys and mds_matrix
+        
+        //#[derive(Clone, Default)]
+        //struct PoseidonPow5Params {}
+        
+        let width = P::WIDTH;
+        let rounds = P::FULL_ROUNDS_BEGINNING + P::FULL_ROUNDS_END + P::PARTIAL_ROUNDS;
+        /*
+        impl<F: PrimeField> PoseidonRoundParams<F> for PoseidonPow5Params {
+            const WIDTH: usize = 3;
+            const FULL_ROUNDS_BEGINNING: usize = 4;
+            const FULL_ROUNDS_END: usize = 4;
+            const PARTIAL_ROUNDS: usize = 56;
+            const SBOX: sbox::PoseidonSbox = sbox::PoseidonSbox::Exponentiation(5);
+        }
+
+        let width = <PoseidonPow5Params as PoseidonRoundParams<F>>::WIDTH;
+        let rounds = 
+            <PoseidonPow5Params as PoseidonRoundParams<F>>::FULL_ROUNDS_BEGINNING +
+            <PoseidonPow5Params as PoseidonRoundParams<F>>::FULL_ROUNDS_END +
+            <PoseidonPow5Params as PoseidonRoundParams<F>>::PARTIAL_ROUNDS;
+        */
+        let mut rng = StdRng::from_seed([0;32]);
+
+        let mds: Vec<Vec<F>> = (0..width).map(|_| {
+            (0..width).map(|_| F::rand(&mut rng)).collect::<Vec<F>>()
+        }).collect();
+
+        let adk: Vec<F> = (0..rounds).map(|_| F::rand(&mut rng)).collect();
+
+        // Return
+        Poseidon {
+            params:  P::default(),
+            round_keys: adk,
+            mds_matrix: mds,
+        }
+    }
 }
 
 impl<F: PrimeField, P: PoseidonRoundParams<F>> Poseidon<F, P> {
@@ -178,7 +220,10 @@ impl<F: PrimeField, P: PoseidonRoundParams<F>> CRHTrait for CRH<F, P> {
     fn setup<R: Rng>(_rng: &mut R) -> Result<Self::Parameters, Error> {
         // automatic generation of parameters are not implemented yet
         // therefore, the developers must specify the parameters themselves
-        unimplemented!()
+        //unimplemented!()
+        
+        // TODO: implement
+        Ok(Self::Parameters::default())
     }
 
     // https://github.com/arkworks-rs/algebra/blob/master/ff/src/to_field_vec.rs
