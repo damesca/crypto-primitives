@@ -40,8 +40,8 @@ pub struct Poseidon<F, P> {
     pub mds_matrix: Vec<Vec<F>>,
 }
 
-impl<F: PrimeField, P: PoseidonRoundParams<F>> Default for Poseidon<F, P> {
-    fn default() -> Self {
+impl<F: PrimeField, P: PoseidonRoundParams<F>> Poseidon<F, P> {
+    fn new_random<R: Rng>(rng: &mut R) -> Self {
         // Generate params, round_keys and mds_matrix
         
         //#[derive(Clone, Default)]
@@ -64,13 +64,13 @@ impl<F: PrimeField, P: PoseidonRoundParams<F>> Default for Poseidon<F, P> {
             <PoseidonPow5Params as PoseidonRoundParams<F>>::FULL_ROUNDS_END +
             <PoseidonPow5Params as PoseidonRoundParams<F>>::PARTIAL_ROUNDS;
         */
-        let mut rng = StdRng::from_seed([0;32]);
+        //let mut rng = StdRng::from_seed([0;32]);
 
         let mds: Vec<Vec<F>> = (0..width).map(|_| {
-            (0..width).map(|_| F::rand(&mut rng)).collect::<Vec<F>>()
+            (0..width).map(|_| F::rand(rng)).collect::<Vec<F>>()
         }).collect();
 
-        let adk: Vec<F> = (0..rounds).map(|_| F::rand(&mut rng)).collect();
+        let adk: Vec<F> = (0..rounds).map(|_| F::rand(rng)).collect();
 
         // Return
         Poseidon {
