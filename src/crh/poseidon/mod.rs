@@ -1,8 +1,7 @@
 use crate::crh::poseidon::sbox::PoseidonSbox;
 use crate::{Error, Vec, CRH as CRHTrait};
 use ark_std::marker::PhantomData;
-use ark_std::rand::rngs::StdRng;
-use ark_std::rand::{Rng, SeedableRng};
+use ark_std::rand::{Rng};
 
 use crate::crh::TwoToOneCRH;
 use ark_ff::fields::PrimeField;
@@ -31,7 +30,7 @@ pub trait PoseidonRoundParams<F: PrimeField>: Default + Clone {
 }
 
 /// The Poseidon permutation.
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Poseidon<F, P> {
     pub params: P,
     /// The round key constants
@@ -223,7 +222,7 @@ impl<F: PrimeField, P: PoseidonRoundParams<F>> CRHTrait for CRH<F, P> {
         //unimplemented!()
         
         // TODO: implement
-        Ok(Self::Parameters::default())
+        Ok(Self::Parameters::new_random(_rng))
     }
 
     // https://github.com/arkworks-rs/algebra/blob/master/ff/src/to_field_vec.rs
