@@ -47,7 +47,7 @@ impl<F: PrimeField, P: PoseidonRoundParams<F>> Poseidon<F, P> {
         //struct PoseidonPow5Params {}
         
         let width = P::WIDTH;
-        let rounds = P::FULL_ROUNDS_BEGINNING + P::FULL_ROUNDS_END + P::PARTIAL_ROUNDS;
+        let rounds = width * (P::FULL_ROUNDS_BEGINNING + P::FULL_ROUNDS_END + P::PARTIAL_ROUNDS);
         /*
         impl<F: PrimeField> PoseidonRoundParams<F> for PoseidonPow5Params {
             const WIDTH: usize = 3;
