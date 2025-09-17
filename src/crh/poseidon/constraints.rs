@@ -230,7 +230,9 @@ impl<F: PrimeField, P: PoseidonRoundParams<F>> CRHGadgetTrait<CRH<F, P>, F> for 
         parameters: &Self::ParametersVar,
         input: &[UInt8<F>],
     ) -> Result<Self::OutputVar, SynthesisError> {
-        let f_var_vec: Vec<FpVar<F>> = input.to_constraint_field()?;
+        let f_var_vec_full: Vec<FpVar<F>> = input.to_constraint_field()?;
+        // f_var_vec is hardcoded to 2 to fix the use of the gadget
+        let f_var_vec = f_var_vec_full[..2].to_vec();
 
         // Choice is arbitrary
         let padding_const: F = F::from(101u32);
